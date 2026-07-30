@@ -1,0 +1,6 @@
+{
+  "name": "Sky View Resort ERP",
+  "description": "Enterprise Financial, HR, Payroll, Accounting, Audit & Business Control ERP for Sky View Resort",
+  "requestFramePermissions": ["camera", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
