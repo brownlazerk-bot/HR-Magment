@@ -18,8 +18,9 @@ import { SecurityAuditView } from './components/views/SecurityAuditView';
 import { ReportsView } from './components/views/ReportsView';
 import { SettingsView } from './components/views/SettingsView';
 
-import { loadSystemState, saveSystemState, resetSystemState } from './lib/storage';
-import { SystemState, CurrencyCode, UserRole } from './types';
+import { SuperAdminSetupView } from './components/SuperAdminSetupView';
+import { loadSystemState, saveSystemState, resetSystemState, generateChecksum } from './lib/storage';
+import { SystemState, CurrencyCode, UserRole, User, AuditLog } from './types';
 
 export default function App() {
   const [state, setState] = useState<SystemState>(() => loadSystemState());
@@ -40,6 +41,41 @@ export default function App() {
       return next;
     });
   };
+
+  const handleCompleteSuperAdminSetup = (superAdminUser: User, hotelName: string, currencyCode: CurrencyCode) => {
+    handleUpdateState((prev) => {
+      const auditLog: AuditLog = {
+        id: 'aud-' + Date.now(),
+        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        userId: superAdminUser.id,
+        userName: superAdminUser.name,
+        userRole: superAdminUser.role,
+        device: 'Control Terminal',
+        module: 'System',
+        action: 'Super Admin Initialized',
+        details: `Created master Super Admin account (${superAdminUser.email}) and set hotel name to "${hotelName}".`,
+        approvalStatus: 'Approved',
+        checksum: generateChecksum(`admin|${superAdminUser.id}|System|Initialized`)
+      };
+      return {
+        ...prev,
+        users: [superAdminUser],
+        currentUser: superAdminUser,
+        activeUserId: superAdminUser.id,
+        auditLogs: [auditLog, ...(prev.auditLogs || [])],
+        settings: {
+          ...prev.settings,
+          hotelName
+        }
+      };
+    });
+    setCurrency(currencyCode);
+  };
+
+  // If no user account registered, trigger Super Admin first-time setup
+  if (!state.users || state.users.length === 0 || !state.currentUser) {
+    return <SuperAdminSetupView onCompleteSetup={handleCompleteSuperAdminSetup} />;
+  }
 
   const handleChangeRole = (role: UserRole) => {
     const userToSet = state.users.find((u) => u.role === role) || {

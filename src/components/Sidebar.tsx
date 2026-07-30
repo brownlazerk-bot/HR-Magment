@@ -56,6 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   pendingApprovalsCount
 }) => {
   const allRoles: UserRole[] = [
+    'Super Admin',
     'CEO / Owner',
     'General Manager',
     'Accountant',
@@ -70,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     'Employee'
   ];
 
-  const executiveRoles: UserRole[] = ['CEO / Owner', 'General Manager', 'Accountant'];
+  const executiveRoles: UserRole[] = ['Super Admin', 'CEO / Owner', 'General Manager', 'Accountant'];
 
   const navItems: NavItem[] = [
     {
@@ -167,9 +168,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
-  // Filter items based on current role (CEO gets everything automatically)
+  // Filter items based on current role (Super Admin & CEO get everything automatically)
   const visibleItems = navItems.filter(
-    (item) => currentRole === 'CEO / Owner' || item.allowedRoles.includes(currentRole)
+    (item) => currentRole === 'Super Admin' || currentRole === 'CEO / Owner' || item.allowedRoles.includes(currentRole)
   );
 
   // Group by category

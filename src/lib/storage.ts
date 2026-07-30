@@ -44,34 +44,87 @@ import {
   initialSettings
 } from '../data/mockData';
 
-const STORAGE_KEY = 'sky_view_resort_erp_v1';
+const STORAGE_KEY = 'sky_view_resort_erp_v3_superadmin';
 
-export function getInitialState(): SystemState {
+export function getCleanState(): SystemState {
+  const zeroedAccounts: Account[] = initialChartOfAccounts.map((acc) => ({
+    ...acc,
+    balance: 0
+  }));
+
+  const cleanMetrics: HotelMetrics = {
+    todayRevenue: 0,
+    weeklyRevenue: 0,
+    monthlyRevenue: 0,
+    yearlyRevenue: 0,
+    cashBalance: 0,
+    bankBalance: 0,
+    mobileMoneyBalance: 0,
+    outstandingDebts: 0,
+    accountsReceivable: 0,
+    accountsPayable: 0,
+    payrollDue: 0,
+    grossProfit: 0,
+    netProfit: 0,
+    totalExpenses: 0,
+    totalPurchases: 0,
+    inventoryValue: 0,
+    totalEmployees: 0,
+    presentToday: 0,
+    lateToday: 0,
+    absentToday: 0,
+    occupiedRooms: 0,
+    totalRooms: 120,
+    restaurantSalesToday: 0,
+    barSalesToday: 0,
+    poolRevenueToday: 0,
+    apartmentRevenueToday: 0,
+    businessHealthScore: 100
+  };
+
+  const initialInitLog: AuditLog = {
+    id: 'aud-001',
+    timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+    userId: 'sys-init',
+    userName: 'System Core',
+    userRole: 'Super Admin',
+    device: 'System Control Terminal',
+    module: 'System',
+    action: 'System Reset',
+    details: 'Cleared all accounts and demo users. System pending Super Admin registration.',
+    approvalStatus: 'Approved',
+    checksum: generateChecksum(`init|sys-init|System|Reset`)
+  };
+
   return {
-    currentUser: initialUsers[0],
-    users: initialUsers,
-    accounts: initialChartOfAccounts,
-    journalEntries: initialJournalEntries,
-    assets: initialAssets,
-    employees: initialEmployees,
-    attendance: initialAttendanceRecords,
-    leaveRequests: initialLeaveRequests,
-    payroll: initialPayrollRecords,
-    salaryAdvances: initialSalaryAdvances,
-    expenses: initialExpenses,
-    suppliers: initialSuppliers,
-    purchaseOrders: initialPurchaseOrders,
-    inventory: initialInventoryItems,
-    stockMovements: initialStockMovements,
-    documents: initialDocuments,
-    auditLogs: initialAuditLogs,
-    metrics: initialHotelMetrics,
-    notifications: initialNotifications,
+    currentUser: undefined as unknown as User,
+    users: [],
+    accounts: zeroedAccounts,
+    journalEntries: [],
+    assets: [],
+    employees: [],
+    attendance: [],
+    leaveRequests: [],
+    payroll: [],
+    salaryAdvances: [],
+    expenses: [],
+    suppliers: [],
+    purchaseOrders: [],
+    inventory: [],
+    stockMovements: [],
+    documents: [],
+    auditLogs: [initialInitLog],
+    metrics: cleanMetrics,
+    notifications: [],
     settings: initialSettings,
-    activeUserId: 'u-1', // Default CEO
+    activeUserId: '',
     isOffline: false,
     lastSyncedAt: new Date().toISOString()
   };
+}
+
+export function getInitialState(): SystemState {
+  return getCleanState();
 }
 
 export function loadSystemState(): SystemState {
@@ -105,7 +158,7 @@ export function loadSystemState(): SystemState {
       notifications: Array.isArray(parsed.notifications) ? parsed.notifications : defaults.notifications,
       metrics: parsed.metrics ? { ...defaults.metrics, ...parsed.metrics } : defaults.metrics,
       settings: parsed.settings ? { ...defaults.settings, ...parsed.settings } : defaults.settings,
-      currentUser: parsed.currentUser || (Array.isArray(parsed.users) && parsed.users[0]) || defaults.currentUser,
+      currentUser: parsed.currentUser || (Array.isArray(parsed.users) && parsed.users.length > 0 ? parsed.users[0] : undefined as unknown as User),
       activeUserId: parsed.activeUserId || defaults.activeUserId,
       isOffline: parsed.isOffline ?? defaults.isOffline,
       lastSyncedAt: parsed.lastSyncedAt || defaults.lastSyncedAt
